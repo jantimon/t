@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - 10.13.0
+before_install:
+  - stty columns 120
+script:
+  - git remote set-branches --add origin master
+  - git fetch
+  - node index.js
