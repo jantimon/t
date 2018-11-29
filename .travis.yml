@@ -6,4 +6,5 @@ before_install:
 script:
   - git remote set-branches --add origin master
   - git fetch
+  - git status
   - node index.js

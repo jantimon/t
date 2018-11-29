@@ -4,7 +4,7 @@ const { promisify } = require("util");
 const execAsync = promisify(exec);
 const getAsync = url => new Promise(resolve => get(url, resolve));
 
-const commit = `master...head`;
+const commit = `master`;
 const allowedChanges = "cnames_active.js";
 
 function jsonParse(data) {
@@ -27,13 +27,6 @@ async function verifyDomain(domain, target) {
 }
 
 const result = (async () => {
-
-  const gitCurrentBranchExec = await execAsync('git rev-parse --abbrev-ref HEAD');
-  if (gitCurrentBranchExec.stdout === 'master') {
-    console.log('Master branch detected - skipping checks.');
-    return;
-  }
-
   const filesDiffExec = await execAsync(`git diff "${commit}" --name-only`);
   const filesChanged = filesDiffExec.stdout.split("\n").filter(file => file);
 
@@ -57,10 +50,13 @@ const result = (async () => {
       };
     })
   );
+  
+  if (fileDiffs.length === 0) {
+    console.log(`No changes detected.`);
+    return;
+  }
 
   console.log("Verifying file changes");
-
-  console.assert(fileDiffs.length > 0, `No changes detected.`);
   console.assert(
     fileDiffs.length === 1,
     `You may change only ${allowedChanges}`
