@@ -4,7 +4,7 @@ const { promisify } = require("util");
 const execAsync = promisify(exec);
 const getAsync = url => new Promise(resolve => get(url, resolve));
 
-const commit = `master`;
+const TARGET_BRANCH = `master`;
 const allowedChanges = "cnames_active.js";
 
 function jsonParse(data) {
@@ -27,13 +27,24 @@ async function verifyDomain(domain, target) {
 }
 
 const result = (async () => {
-  const filesDiffExec = await execAsync(`git diff "${commit}" --name-only`);
+  if (process.env.TRAVIS_BRANCH !== TARGET_BRANCH) {
+    console.log(
+      `${
+        process.env.TRAVIS_BRANCH
+      } not targeting ${TARGET_BRANCH} - skipping test`
+    );
+    return;
+  }
+
+  const filesDiffExec = await execAsync(
+    `git diff "${TARGET_BRANCH}" --name-only`
+  );
   const filesChanged = filesDiffExec.stdout.split("\n").filter(file => file);
 
   const fileDiffs = await Promise.all(
     filesChanged.map(async fileName => {
       const fileDiffExec = await execAsync(
-        `git diff "${commit}" "${fileName}"`
+        `git diff "${TARGET_BRANCH}" "${fileName}"`
       );
       const fileChanges = fileDiffExec.stdout.split("\n");
       return {
@@ -50,7 +61,7 @@ const result = (async () => {
       };
     })
   );
-  
+
   if (fileDiffs.length === 0) {
     console.log(`No changes detected.`);
     return;
