@@ -4,7 +4,10 @@ node_js:
 before_install:
   - stty columns 120
 script:
-  - git remote set-branches --add origin master
+  - git remote set-branches --add origin $TRAVIS_BRANCH
   - git fetch
   - git status
+  - echo $TRAVIS_COMMIT_RANGE
+  - echo $TRAVIS_BRANCH
+  - echo $TRAVIS_COMMIT
   - node index.js
